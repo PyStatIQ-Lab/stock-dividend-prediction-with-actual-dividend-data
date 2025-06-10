@@ -41,7 +41,7 @@ def get_financial_data(ticker):
     result['Latest Close Price'] = latest_close
 
     # Financial metrics with proper fallbacks
-    result.update({
+    financial_metrics = {
         'Net Income': safe_get(financials['income'], 'Net Income'),
         'Operating Income': safe_get(financials['income'], 'Operating Income') or 
                          safe_get(financials['income'], 'EBIT'),
@@ -59,7 +59,8 @@ def get_financial_data(ticker):
                          if all(k in financials['balance'].index for k in ['Total Debt', 'Total Stockholder Equity']) else "N/A",
         'Dividend Yield': financials['info'].get('dividendYield', "N/A"),
         'Free Cash Flow': safe_get(financials['cashflow'], 'Free Cash Flow')
-    })
+    }
+    result.update(financial_metrics)
 
     # Dividend analysis with better handling
     dividends = financials['dividends']
@@ -154,7 +155,7 @@ def get_financial_data(ticker):
 
     return result
 
-# Function to save results to an Excel file
+# Function to save results to Excel
 def save_to_excel(results, filename="dividend_predictions.xlsx"):
     try:
         results_df = pd.DataFrame(results)
@@ -193,48 +194,28 @@ st.markdown("""
             margin-right: auto;
             width: 25%;
         }
-        /* Hide GitHub icons and fork button */
-        .css-1v0mbdj { 
-            display: none !important;
-        }
-        .css-1b22hs3 {
-            display: none !important;
-        }
-        /* Hide Streamlit footer elements */
-        footer { 
-            display: none !important; 
-        }
-        /* Hide the GitHub repository button */
-        .css-1r6ntm8 { 
-            display: none !important;
-        }
-        /* Style the dataframe */
-        .dataframe {
-            width: 100%;
-        }
-        /* Style the progress bar */
-        .stProgress > div > div > div > div {
-            background-color: #4CAF50;
-        }
+        .css-1v0mbdj { display: none !important; }
+        .css-1b22hs3 { display: none !important; }
+        footer { display: none !important; }
+        .css-1r6ntm8 { display: none !important; }
+        .dataframe { width: 100%; }
+        .stProgress > div > div > div > div { background-color: #4CAF50; }
     </style>
     <img class="header-logo" src="https://pystatiq.com/images/pystatIQ_logo.png" alt="Header Logo">
 """, unsafe_allow_html=True)
 
 st.title('Stock Dividend Prediction and Financial Analysis')
 
-# Read the stock symbols from the local stocks.xlsx file
+# Main application logic
 if os.path.exists(STOCKS_FILE_PATH):
     symbols_df = pd.read_excel(STOCKS_FILE_PATH)
 
-    # Check if the 'Symbol' column exists
     if 'Symbol' not in symbols_df.columns:
         st.error("The file must contain a 'Symbol' column with stock tickers.")
     else:
-        # Let the user select stocks from the file
         stock_options = symbols_df['Symbol'].tolist()
         selected_stocks = st.multiselect("Select Stock Symbols", stock_options)
 
-        # Button to start the data fetching process
         if st.button('Fetch Financial Data') and selected_stocks:
             all_results = []
             progress_bar = st.progress(0)
@@ -292,18 +273,14 @@ st.markdown("""
         <p>Don't forget to add the Application code.</p>
         <p><strong>README:</strong> <a href="https://pystatiq-lab.gitbook.io/docs/python-apps/stock-dividend-predictions" target="_blank">https://pystatiq-lab.gitbook.io/docs/python-apps/stock-dividend-predictions</a></p>
     </div>
-""", unsafe_allow_html=True)
-
-# Display Footer Logo
-st.markdown(f"""
     <style>
-        .footer-logo {{
+        .footer-logo {
             display: block;
             margin-left: auto;
             margin-right: auto;
             width: 90px;
             padding-top: 30px;
-        }}
+        }
     </style>
     <img class="footer-logo" src="https://predictram.com/images/logo.png" alt="Footer Logo">
 """, unsafe_allow_html=True)
